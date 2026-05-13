@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ClickLounge Studio — Client Check-in</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:root {
+  --teal:#51897d; --teal-dk:#3d6b61; --teal-lt:#7aada3;
+  --gold:#d79068; --gold-lt:#e8b08a;
+  --slate:#2f4f4f; --light:#f4f7f6; --light2:#e8efee;
+  --white:#fff; --text:#1e3333; --muted:#6b8c8c;
+  --border:rgba(81,137,125,0.2); --danger:#c0544a; --success:#3d8c6e;
+}
+html,body { height:100%; }
+body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+
+.hero { background:var(--slate); padding:26px 20px 20px; text-align:center; flex-shrink:0; position:relative; }
+.hero-ring { width:54px; height:54px; border-radius:50%; background:rgba(215,144,104,0.15); border:1.5px solid rgba(215,144,104,0.3); display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:20px; cursor:pointer; user-select:none; transition:transform 0.1s; }
+.hero-ring:active { transform:scale(0.93); }
+.hero h1 { font-size:16px; font-weight:700; color:var(--gold); letter-spacing:1.5px; text-transform:uppercase; }
+.hero p { font-size:9px; color:var(--teal-lt); letter-spacing:3px; text-transform:uppercase; font-weight:300; margin-top:2px; }
+.hero-sub { font-size:12px; color:rgba(232,239,238,0.6); margin-top:8px; font-weight:300; }
+#tap-hint { position:absolute; top:8px; right:10px; font-size:9px; color:rgba(232,239,238,0.2); }
+#tap-cnt  { position:absolute; top:8px; left:10px; font-size:9px; color:rgba(215,144,104,0.5); display:none; }
+
+.kbody { flex:1; padding:18px 16px 14px; max-width:500px; margin:0 auto; width:100%; }
+
+.steps { display:flex; align-items:flex-start; margin-bottom:20px; }
+.scol { display:flex; flex-direction:column; align-items:center; }
+.sdot { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; flex-shrink:0; transition:all 0.3s; }
+.sdot.done { background:var(--teal); color:#fff; }
+.sdot.active { background:var(--gold); color:#fff; box-shadow:0 0 0 3px rgba(215,144,104,0.2); }
+.sdot.pending { background:var(--light2); color:var(--muted); }
+.slbl { font-size:9px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; text-align:center; }
+.sline { flex:1; height:1.5px; background:var(--light2); margin-top:13px; transition:background 0.3s; }
+.sline.done { background:var(--teal); }
+
+.screen { display:none; }
+.screen.active { display:block; }
+
+.card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:14px; box-shadow:0 1px 6px rgba(47,79,79,0.05); }
+.ct { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal); margin-bottom:14px; font-weight:600; }
+
+.field { margin-bottom:14px; }
+.field label { display:block; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:5px; font-weight:500; }
+.field input,.field textarea { width:100%; background:var(--light); border:1.5px solid var(--light2); color:var(--text); border-radius:8px; padding:12px; font-size:14px; font-family:'Poppins',sans-serif; transition:border-color 0.15s; }
+.field input:focus { outline:none; border-color:var(--teal); background:var(--white); }
+.field input.err { border-color:var(--danger); }
+.field textarea { font-size:12px; resize:none; }
+
+.arr-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
+.arr-card { border:2px solid var(--light2); border-radius:10px; padding:16px 10px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--light); user-select:none; }
+.arr-card:hover { border-color:var(--teal-lt); }
+.arr-card.sel { border-color:var(--teal); background:rgba(81,137,125,0.06); }
+.arr-card .ic { font-size:24px; margin-bottom:6px; display:block; }
+.arr-card .lbl { font-size:13px; font-weight:600; color:var(--text); }
+.arr-card .sub { font-size:10px; color:var(--muted); margin-top:3px; }
+.arr-card.sel .lbl { color:var(--teal-dk); }
+
+.blist { display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; }
+.bitem { display:flex; align-items:center; gap:12px; padding:11px 12px; border:1.5px solid var(--light2); border-radius:9px; cursor:pointer; transition:all 0.15s; background:var(--light); user-select:none; }
+.bitem:hover { border-color:var(--teal-lt); }
+.bitem.sel { border-color:var(--teal); background:rgba(81,137,125,0.05); }
+.bav { width:34px; height:34px; border-radius:50%; background:rgba(81,137,125,0.15); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--teal-dk); flex-shrink:0; }
+.bn { font-size:13px; font-weight:500; }
+.bs { font-size:10px; color:var(--muted); margin-top:1px; }
+.bchk { margin-left:auto; width:20px; height:20px; border-radius:50%; background:var(--teal); display:none; align-items:center; justify-content:center; font-size:11px; color:#fff; flex-shrink:0; }
+.bitem.sel .bchk { display:flex; }
+.no-bk { font-size:12px; color:var(--muted); text-align:center; padding:20px 0; line-height:1.7; }
+
+.tc-scroll { background:var(--light); border:1px solid var(--light2); border-radius:8px; padding:12px; font-size:11px; color:var(--muted); line-height:1.7; max-height:90px; overflow-y:auto; margin-bottom:10px; }
+.tc-row { display:flex; align-items:flex-start; gap:10px; }
+.tc-row input[type=checkbox] { width:18px; height:18px; min-width:18px; margin-top:2px; accent-color:var(--teal); cursor:pointer; }
+.tc-row span { font-size:12px; color:var(--text); line-height:1.6; }
+
+.srow { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--light2); font-size:12px; }
+.srow:last-child { border-bottom:none; }
+.srow .sl { color:var(--muted); }
+.srow .sv { font-weight:500; text-align:right; max-width:60%; }
+
+.btn-main { width:100%; padding:14px; background:var(--teal); color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; transition:background 0.15s; }
+.btn-main:hover { background:var(--teal-dk); }
+.btn-main:disabled { background:var(--light2); color:var(--muted); cursor:not-allowed; }
+.btn-main.gold { background:var(--gold); }
+.btn-main.gold:hover { background:var(--gold-lt); }
+.btn-main.slate { background:var(--slate); }
+.btn-main.danger { background:var(--danger); }
+.btn-back { background:none; border:1.5px solid var(--border); color:var(--muted); border-radius:9px; padding:12px 20px; font-size:13px; font-family:'Poppins',sans-serif; cursor:pointer; transition:all 0.15s; }
+.btn-back:hover { border-color:var(--teal-lt); color:var(--teal); }
+.brow { display:flex; gap:10px; align-items:center; }
+.brow .btn-main { flex:1; }
+
+.err-msg { background:rgba(192,84,74,0.08); border:1px solid rgba(192,84,74,0.25); border-radius:7px; padding:8px 12px; font-size:11px; color:var(--danger); margin-bottom:12px; display:none; }
+.err-msg.show { display:block; }
+
+#conn-banner { border-radius:8px; padding:10px 14px; font-size:12px; margin-bottom:14px; text-align:center; line-height:1.5; display:none; }
+#conn-banner.setup  { background:rgba(215,144,104,0.1); border:1px solid rgba(215,144,104,0.3); color:#9a5c2a; display:block; }
+#conn-banner.ok     { background:rgba(61,140,110,0.1); border:1px solid rgba(61,140,110,0.25); color:var(--success); display:block; }
+#conn-banner.fail   { background:rgba(192,84,74,0.1); border:1px solid rgba(192,84,74,0.25); color:var(--danger); display:block; }
+
+.loading { text-align:center; padding:24px; color:var(--muted); font-size:12px; }
+.spinner { width:28px; height:28px; border:2.5px solid var(--light2); border-top-color:var(--teal); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 10px; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.success-ring { width:70px; height:70px; border-radius:50%; background:rgba(61,140,110,0.1); border:2px solid rgba(61,140,110,0.3); display:flex; align-items:center; justify-content:center; margin:4px auto 14px; font-size:26px; }
+.success-title { font-size:18px; font-weight:600; color:var(--slate); text-align:center; margin-bottom:6px; }
+.success-sub { font-size:12px; color:var(--muted); text-align:center; line-height:1.7; }
+.ref-box { background:rgba(81,137,125,0.08); border:1px solid rgba(81,137,125,0.2); border-radius:9px; padding:14px 16px; text-align:center; margin:16px 0; }
+.ref-lbl { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:5px; }
+.ref-code { font-size:22px; font-weight:700; color:var(--teal-dk); letter-spacing:3px; }
+#reset-bar { background:var(--light2); border-radius:4px; height:4px; margin-top:14px; overflow:hidden; }
+#reset-prog { height:100%; background:var(--teal); width:100%; }
+
+/* SETTINGS */
+#sc-settings { display:none; }
+#sc-settings.active { display:block; }
+.set-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.set-hdr h3 { font-size:16px; font-weight:600; color:var(--slate); }
+.conn-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+.conn-dot.green { background:var(--success); }
+.conn-dot.red   { background:var(--danger); }
+.conn-dot.gray  { background:var(--muted); }
+.pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.pin-btn { background:var(--light); border:1.5px solid var(--light2); border-radius:8px; padding:14px 0; font-size:18px; font-weight:500; color:var(--text); cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.1s; }
+.pin-btn:active { background:var(--teal); color:#fff; border-color:var(--teal); transform:scale(0.95); }
+.pin-disp { background:var(--light); border:1.5px solid var(--light2); border-radius:8px; padding:12px; text-align:center; font-size:20px; letter-spacing:8px; margin-bottom:12px; min-height:48px; color:var(--slate); font-weight:600; }
+.divider { height:1px; background:var(--light2); margin:14px 0; }
+
+.kfooter { padding:10px 16px; text-align:center; font-size:10px; color:var(--muted); border-top:1px solid var(--light2); background:var(--white); flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:10px; }
+#footer-txt { }
+#conn-dot-footer { font-size:9px; font-weight:600; }
+#conn-dot-footer.on  { color:var(--success); }
+#conn-dot-footer.off { color:var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span id="tap-hint">staff ⚙</span>
+  <span id="tap-cnt"></span>
+  <div class="hero-ring" id="logo" onclick="handleTap()">📷</div>
+  <h1>ClickLounge</h1>
+  <p>Studio</p>
+  <div class="hero-sub">Welcome! Please complete your check-in below.</div>
+</div>
+
+<div class="kbody">
+
+  <div id="conn-banner" class="setup">⚙ Not connected. Tap the camera icon 5× to configure.</div>
+
+  <!-- Steps -->
+  <div class="steps" id="steps-bar">
+    <div class="scol"><div class="sdot active" id="sd1">1</div><div class="slbl">Arrival</div></div>
+    <div class="sline" id="sl1"></div>
+    <div class="scol"><div class="sdot pending" id="sd2">2</div><div class="slbl">Details</div></div>
+    <div class="sline" id="sl2"></div>
+    <div class="scol"><div class="sdot pending" id="sd3">3</div><div class="slbl">T&amp;C</div></div>
+    <div class="sline" id="sl3"></div>
+    <div class="scol"><div class="sdot pending" id="sd4">✓</div><div class="slbl">Done</div></div>
+  </div>
+
+  <!-- Screen 1: Arrival -->
+  <div class="screen active" id="sc1">
+    <div class="card">
+      <div class="ct">How are you here today?</div>
+      <div class="arr-grid">
+        <div class="arr-card" id="ac-wi" onclick="pickArr('walkin')"><span class="ic">🚶</span><div class="lbl">Walk-in</div><div class="sub">No prior booking</div></div>
+        <div class="arr-card" id="ac-bk" onclick="pickArr('booked')"><span class="ic">📅</span><div class="lbl">Booked</div><div class="sub">I have a reservation</div></div>
+      </div>
+    </div>
+    <button class="btn-main" id="btn1" onclick="goSc(2)" disabled>Continue →</button>
+  </div>
+
+  <!-- Screen 2: Details -->
+  <div class="screen" id="sc2">
+    <div id="wi-sec" style="display:none;">
+      <div class="card">
+        <div class="ct">Your information</div>
+        <div id="err-wi" class="err-msg">Please enter your Facebook name.</div>
+        <div class="field"><label>Facebook Name *</label><input type="text" id="wi-fb" placeholder="Your Facebook display name" autocomplete="off"></div>
+        <div class="field"><label>Email Address *</label><input type="email" id="wi-em" placeholder="email@example.com" autocomplete="off" required></div>
+      </div>
+    </div>
+    <div id="bk-sec" style="display:none;">
+      <div class="card">
+        <div class="ct">Select your name</div>
+        <div id="err-bk" class="err-msg">Please select your name.</div>
+        <div id="bk-list"><div class="loading"><div class="spinner"></div>Loading bookings…</div></div>
+      </div>
+    </div>
+    <div class="brow"><button class="btn-back" onclick="goSc(1)">← Back</button><button class="btn-main" onclick="validateStep2()">Continue →</button></div>
+  </div>
+
+  <!-- Screen 3: T&C -->
+  <div class="screen" id="sc3">
+    <div class="card">
+      <div class="ct">Review your details</div>
+      <div class="srow"><span class="sl">Arrival</span><span class="sv" id="sm-arr">—</span></div>
+      <div class="srow"><span class="sl">Facebook Name</span><span class="sv" id="sm-fb">—</span></div>
+      <div class="srow"><span class="sl">Email</span><span class="sv" id="sm-em">—</span></div>
+      <div class="srow" id="sm-svc-row" style="display:none;"><span class="sl">Booking</span><span class="sv" id="sm-svc">—</span></div>
+    </div>
+    <div class="card">
+      <div class="ct">Terms and Conditions</div>
+      <div class="tc-scroll">By registering, I agree that ClickLounge Studio is not liable for personal belongings left on the premises. All digital files remain property of ClickLounge Studio until full payment is received. No refunds after the session has started. Photos may be used for promotional purposes unless I opt out in writing prior to the session. I consent to the collection of my contact information for booking and communication purposes.</div>
+      <div class="tc-row"><input type="checkbox" id="tc-chk" onchange="document.getElementById('btn-sub').disabled=!this.checked;"><span>I have read and agree to the Terms and Conditions</span></div>
+    </div>
+    <div id="err-tc" class="err-msg">Please agree to the Terms and Conditions.</div>
+    <div class="brow"><button class="btn-back" onclick="goSc(2)">← Back</button><button class="btn-main gold" id="btn-sub" onclick="submitReg()" disabled>Complete Check-in</button></div>
+  </div>
+
+  <!-- Screen 4: Success -->
+  <div class="screen" id="sc4">
+    <div class="card" style="text-align:center;padding:28px 16px;">
+      <div class="success-ring">✓</div>
+      <div class="success-title">You're checked in!</div>
+      <div class="success-sub" style="margin-bottom:4px;">Thank you, <strong id="done-name"></strong>.</div>
+      <div class="success-sub">Please proceed to the waiting area.<br>Our staff will call your name shortly.</div>
+      <div class="ref-box"><div class="ref-lbl">Reference Code</div><div class="ref-code" id="done-ref"></div></div>
+      <div class="success-sub" style="font-size:11px;margin-bottom:12px;">Show this code to our staff when called.</div>
+      <div id="reset-bar"><div id="reset-prog"></div></div>
+      <div class="success-sub" style="font-size:10px;margin-top:5px;" id="reset-lbl">Resetting in 30 seconds…</div>
+    </div>
+    <button class="btn-main" onclick="resetKiosk()">← New Registration</button>
+  </div>
+
+  <!-- Settings (tap logo 5×) -->
+  <div id="sc-settings">
+    <div id="pin-section" style="display:none;">
+      <div class="card">
+        <div class="ct">Staff PIN Required</div>
+        <div class="pin-disp" id="pin-disp">· · · ·</div>
+        <div class="pin-grid">
+          <button class="pin-btn" onclick="pp('1')">1</button><button class="pin-btn" onclick="pp('2')">2</button><button class="pin-btn" onclick="pp('3')">3</button>
+          <button class="pin-btn" onclick="pp('4')">4</button><button class="pin-btn" onclick="pp('5')">5</button><button class="pin-btn" onclick="pp('6')">6</button>
+          <button class="pin-btn" onclick="pp('7')">7</button><button class="pin-btn" onclick="pp('8')">8</button><button class="pin-btn" onclick="pp('9')">9</button>
+          <button class="pin-btn" style="background:var(--light2);" onclick="pclr()">⌫</button>
+          <button class="pin-btn" onclick="pp('0')">0</button>
+          <button class="pin-btn" style="background:var(--teal);color:#fff;" onclick="psub()">✓</button>
+        </div>
+        <button class="btn-back" style="width:100%;text-align:center;" onclick="closeSettings()">← Back</button>
+      </div>
+    </div>
+    <div id="set-panel" style="display:none;">
+      <div class="set-hdr"><h3>⚙ Kiosk Settings</h3><button class="btn-back" style="padding:6px 12px;font-size:11px;" onclick="closeSettings()">✕ Close</button></div>
+      <div class="card">
+        <div class="ct">Google Sheets Connection</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:10px;">
+          <span class="conn-dot" id="set-dot"></span><span id="set-status">Checking…</span>
+        </div>
+        <!-- URL hardcoded — no longer editable from kiosk -->
+        <div style="display:flex;gap:8px;">
+          <button class="btn-main" style="padding:10px;font-size:12px;" onclick="saveUrl()">Save & Test</button>
+          <button class="btn-main slate" style="padding:10px;font-size:12px;" onclick="testUrl()">Test Only</button>
+        </div>
+        <div id="url-result" style="margin-top:8px;font-size:11px;display:none;"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Staff PIN (4 digits)</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Protects Settings from accidental client access. Leave blank to disable.</p>
+        <div class="field"><label>New PIN</label><input type="password" id="set-pin" placeholder="e.g. 1234" maxlength="4" inputmode="numeric"></div>
+        <button class="btn-main" style="padding:10px;font-size:12px;" onclick="savePin()">Save PIN</button>
+      </div>
+      <div class="card">
+        <div class="ct">Auto-Reset (seconds)</div>
+        <div class="field"><label>Seconds after check-in (10–120)</label><input type="number" id="set-reset" placeholder="30" min="10" max="120"></div>
+        <button class="btn-main" style="padding:10px;font-size:12px;" onclick="saveReset()">Save</button>
+      </div>
+      <div class="card" style="border-color:rgba(192,84,74,0.2);">
+        <div class="ct" style="color:var(--danger);">Offline Queue</div>
+        <div id="pending-info" style="font-size:12px;margin-bottom:10px;"></div>
+        <button class="btn-main danger" style="padding:10px;font-size:12px;" onclick="flushPending()">Retry Pending Sync</button>
+      </div>
+      <button class="btn-main slate" style="margin-top:4px;" onclick="closeSettings()">← Back to Kiosk</button>
+    </div>
+  </div>
+
+</div><!-- /kbody -->
+
+<div class="kfooter">
+  <span id="footer-txt">ClickLounge Studio</span>
+  <span>·</span>
+  <span id="conn-dot-footer" class="off">● offline</span>
+</div>
+
+<script>
+// ── HELPERS ──
+function getUrl()      { return 'https://script.google.com/macros/s/AKfycbx_Y5nH34Rq16JJ2AxBDr30ttmDFuic61OqoC0u3Wq0zogHEhfoV6qE7uiNagI43flVgw/exec'; }
+function getPin()      { return localStorage.getItem('cl_kiosk_pin')||''; }
+function getReset()    { return parseInt(localStorage.getItem('cl_kiosk_reset')||'30'); }
+function todayPH()     { return new Date(Date.now()+8*60*60*1000).toISOString().slice(0,10); }
+function timePH()      { return new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Manila'}); }
+function uid()         { return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function fmt(n)        { return (+(n||0)).toLocaleString('en-PH'); }
+
+// ── GAS CALL ──
+// JSONP call — works on ALL browsers including Safari on iPad/iPhone.
+// Apps Script redirects break fetch() on Safari; JSONP uses a <script>
+// tag instead which follows redirects transparently on all platforms.
+function gasCall(action, payload={}) {
+  return new Promise((resolve, reject) => {
+    const url = getUrl();
+    if (!url) { reject(new Error('No URL configured')); return; }
+    const cbName = '_gcb_' + Math.random().toString(36).slice(2);
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({action, payload}))));
+    const reqUrl = url + '?d=' + encodeURIComponent(b64) + '&callback=' + cbName;
+    const timer = setTimeout(() => {
+      cleanup(); reject(new Error('Request timed out'));
+    }, 30000);
+    window[cbName] = (data) => {
+      cleanup();
+      if (data && data.error) reject(new Error(data.error));
+      else resolve(data);
+    };
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      const el = document.getElementById(cbName);
+      if (el) el.remove();
+    }
+    const script = document.createElement('script');
+    script.id  = cbName;
+    script.src = reqUrl;
+    script.onerror = () => { cleanup(); reject(new Error('Network error — check URL and internet')); };
+    document.head.appendChild(script);
+  });
+}
+
+// ── STATE ──
+let arrival='', selBooking=null, bookings=[], isOnline=false;
+let tapCount=0, tapTimer=null, pinBuf='', resetTimer=null;
+
+// ── CONNECTION ──
+async function checkConn(silent=false){
+  const banner=document.getElementById('conn-banner');
+  const dot=document.getElementById('conn-dot-footer');
+  if(!getUrl()){
+    banner.className='setup'; banner.textContent='⚙ Not connected. Tap the camera icon 5× to configure.';
+    dot.className='off'; dot.textContent='● offline'; isOnline=false; return false;
+  }
+  try{
+    banner.className=''; banner.style.display='';
+    banner.textContent='Connecting…'; banner.style.background='rgba(81,137,125,0.15)'; banner.style.color='var(--teal)';
+    await gasCall('getAll');
+    if(!silent){ banner.className='ok'; banner.textContent='✓ Connected'; setTimeout(()=>{ banner.style.display='none'; },3000); }
+    dot.className='on'; dot.textContent='● live'; isOnline=true; return true;
+  }catch(e){
+    // Auto-retry once after 8 seconds (Apps Script cold start)
+    banner.className='fail';
+    banner.innerHTML='Connecting to studio system… <button onclick="loadData(false)" style="margin-left:10px;background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:inherit;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Retry</button>';
+    dot.className='off'; dot.textContent='● offline'; isOnline=false;
+    // Silent auto-retry after 10s
+    setTimeout(async ()=>{
+      if(!isOnline){ try{ await gasCall('getAll'); banner.className='ok'; banner.textContent='✓ Connected'; dot.className='on'; dot.textContent='● live'; isOnline=true; setTimeout(()=>{ banner.style.display='none'; },3000); }catch(e2){} }
+    }, 10000);
+    return false;
+  }
+}
+
+// ── TAP LOGO ──
+function handleTap(){
+  tapCount++;
+  const c=document.getElementById('tap-cnt');
+  if(tapCount>=2&&tapCount<5){ c.style.display='block'; c.textContent=(5-tapCount)+' more…'; }
+  if(tapTimer) clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>{ tapCount=0; c.style.display='none'; },2000);
+  if(tapCount>=5){ tapCount=0; c.style.display='none'; openSettings(); }
+}
+
+// ── SETTINGS ──
+function openSettings(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('steps-bar').style.display='none';
+  document.getElementById('conn-banner').style.display='none';
+  document.getElementById('sc-settings').classList.add('active');
+  const pin=getPin();
+  if(pin){
+    pinBuf=''; updatePinDisp();
+    document.getElementById('pin-section').style.display='';
+    document.getElementById('set-panel').style.display='none';
+  } else {
+    document.getElementById('pin-section').style.display='none';
+    document.getElementById('set-panel').style.display='';
+    loadSetPanel();
+  }
+}
+function loadSetPanel(){
+  // URL is hardcoded
+  document.getElementById('set-reset').value=getReset();
+  document.getElementById('set-pin').value='';
+  const dot=document.getElementById('set-dot'), st=document.getElementById('set-status');
+  dot.className='conn-dot '+(isOnline?'green':'red');
+  st.textContent=isOnline?'Connected ✓':'Disconnected';
+  const pend=JSON.parse(localStorage.getItem('cl_kiosk_pending')||'[]');
+  const pi=document.getElementById('pending-info');
+  pi.textContent=pend.length?pend.length+' registration(s) pending.':'No pending registrations.';
+  pi.style.color=pend.length?'var(--danger)':'var(--success)';
+}
+async function saveUrl(){
+  const url=document.getElementById('set-url').value.trim();
+  localStorage.setItem('cl_kiosk_url',url);
+  await testUrl(true);
+}
+async function testUrl(saved=false){
+  const r=document.getElementById('url-result'); r.style.display='block'; r.style.color='var(--muted)'; r.textContent='Testing…';
+  const url=document.getElementById('set-url').value.trim();
+  const prev=getUrl();
+  try{
+    await gasCall('getAll');
+    r.style.color='var(--success)'; r.textContent='✓ Connection successful!'+(saved?' URL saved.':'');
+    isOnline=true; document.getElementById('set-dot').className='conn-dot green'; document.getElementById('set-status').textContent='Connected ✓';
+    checkConn(true);
+  }catch(e){
+    r.style.color='var(--danger)'; r.textContent='✗ '+e.message;
+    if(!saved) localStorage.setItem('cl_kiosk_url',prev);
+    isOnline=false;
+  }
+}
+function savePin(){ const p=document.getElementById('set-pin').value.trim(); if(p&&(p.length!==4||isNaN(p))){ alert('PIN must be 4 digits.'); return; } localStorage.setItem('cl_kiosk_pin',p); alert(p?'PIN saved ✓':'PIN removed.'); }
+function saveReset(){ const v=parseInt(document.getElementById('set-reset').value)||30; localStorage.setItem('cl_kiosk_reset',Math.max(10,Math.min(120,v))); alert('Timer saved ✓'); }
+async function flushPending(){
+  const pend=JSON.parse(localStorage.getItem('cl_kiosk_pending')||'[]');
+  if(!pend.length){ alert('No pending registrations.'); return; }
+  let ok=0,fail=0;
+  for(const reg of pend){ try{ await gasCall('saveRegistration',reg); ok++; }catch(e){ fail++; } }
+  const remaining=pend.slice(ok); localStorage.setItem('cl_kiosk_pending',JSON.stringify(remaining));
+  alert(ok+' synced'+( fail?' ('+fail+' failed)':' ✓'));
+  loadSetPanel();
+}
+function closeSettings(){
+  document.getElementById('sc-settings').classList.remove('active');
+  document.getElementById('steps-bar').style.display='';
+  resetKiosk();
+}
+
+// ── PIN ──
+function pp(d){ if(pinBuf.length>=4) return; pinBuf+=d; updatePinDisp(); if(pinBuf.length===4) setTimeout(psub,200); }
+function pclr(){ pinBuf=pinBuf.slice(0,-1); updatePinDisp(); }
+function updatePinDisp(){ const d=document.getElementById('pin-disp'); d.textContent=('●'.repeat(pinBuf.length)+'·'.repeat(4-pinBuf.length)).split('').join(' '); }
+function psub(){
+  if(pinBuf===getPin()){
+    document.getElementById('pin-section').style.display='none';
+    document.getElementById('set-panel').style.display=''; loadSetPanel(); pinBuf='';
+  } else {
+    const d=document.getElementById('pin-disp'); d.style.color='var(--danger)'; d.textContent='✗ Wrong PIN';
+    pinBuf=''; setTimeout(()=>{ d.style.color=''; updatePinDisp(); },1200);
+  }
+}
+
+// ── BOOKINGS ──
+async function loadBookings(){
+  const el=document.getElementById('bk-list');
+  el.innerHTML='<div class="loading"><div class="spinner"></div>Loading bookings…</div>';
+  try{
+    const d=await gasCall('getAcknowledgements');
+    const list=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
+    bookings=list; isOnline=true; renderBookings(list);
+  }catch(e){
+    isOnline=false;
+    el.innerHTML='<div class="no-bk">⚠ Could not load bookings.<br><span style="font-size:10px;">Check your internet. You can still register as walk-in.</span></div>';
+  }
+}
+function renderBookings(list){
+  if(!list||!list.length){ document.getElementById('bk-list').innerHTML='<div class="no-bk">No bookings found.<br>Please see our staff.</div>'; return; }
+  document.getElementById('bk-list').innerHTML='<div class="blist">'+list.map(b=>{
+    const ini=(b.fbName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="bitem" id="bi-${b.id}" onclick="pickBk('${b.id}')">
+      <div class="bav">${ini}</div>
+      <div style="flex:1;min-width:0;"><div class="bn">${b.fbName}</div><div class="bs">${b.service||'—'} · ₱${fmt(+b.downpayment)} ${b.mop}</div></div>
+      <div class="bchk">✓</div>
+    </div>`;
+  }).join('')+'</div>';
+}
+function pickBk(id){
+  selBooking=bookings.find(b=>b.id===id);
+  document.querySelectorAll('.bitem').forEach(e=>e.classList.remove('sel'));
+  const el=document.getElementById('bi-'+id); if(el) el.classList.add('sel');
+  document.getElementById('err-bk').classList.remove('show');
+}
+
+// ── NAV ──
+function pickArr(t){
+  arrival=t;
+  document.getElementById('ac-wi').classList.toggle('sel',t==='walkin');
+  document.getElementById('ac-bk').classList.toggle('sel',t==='booked');
+  document.getElementById('btn1').disabled=false;
+}
+function goSc(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc'+n).classList.add('active');
+  updateSteps(n);
+  if(n===2){
+    const wi=arrival==='walkin';
+    document.getElementById('wi-sec').style.display=wi?'':'none';
+    document.getElementById('bk-sec').style.display=wi?'none':'';
+    if(!wi) loadBookings();
+  }
+  window.scrollTo(0,0);
+}
+function updateSteps(cur){
+  for(let i=1;i<=4;i++){
+    const dot=document.getElementById('sd'+i), lbl=i===4?'✓':String(i);
+    dot.className='sdot '+(i<cur?'done':i===cur?'active':'pending'); dot.textContent=lbl;
+    if(i<4) document.getElementById('sl'+i).className='sline'+(i<cur?' done':'');
+  }
+}
+
+// ── VALIDATE ──
+function validateStep2(){
+  if(arrival==='walkin'){
+    const fb=document.getElementById('wi-fb').value.trim();
+    const em=document.getElementById('wi-em').value.trim();
+    if(!fb){ document.getElementById('wi-fb').classList.add('err'); document.getElementById('err-wi').classList.add('show'); return; }
+    document.getElementById('wi-fb').classList.remove('err');
+    if(!em){ document.getElementById('wi-em').classList.add('err'); document.getElementById('err-wi').textContent='Please enter your Facebook name and email address.'; document.getElementById('err-wi').classList.add('show'); return; }
+    if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){ document.getElementById('wi-em').classList.add('err'); document.getElementById('err-wi').textContent='Please enter a valid email address.'; document.getElementById('err-wi').classList.add('show'); return; }
+    document.getElementById('wi-em').classList.remove('err');
+    document.getElementById('err-wi').classList.remove('show');
+    document.getElementById('err-wi').textContent='Please enter your Facebook name.';
+    document.getElementById('sm-arr').textContent='Walk-in';
+    document.getElementById('sm-fb').textContent=fb;
+    document.getElementById('sm-em').textContent=em;
+    document.getElementById('sm-svc-row').style.display='none';
+  } else {
+    if(!selBooking){ document.getElementById('err-bk').classList.add('show'); return; }
+    document.getElementById('err-bk').classList.remove('show');
+    document.getElementById('sm-arr').textContent='Booked Appointment';
+    document.getElementById('sm-fb').textContent=selBooking.fbName;
+    document.getElementById('sm-em').textContent=selBooking.email||'Not provided';
+    document.getElementById('sm-svc').textContent=(selBooking.service||'—')+' · ₱'+fmt(+selBooking.downpayment)+' '+selBooking.mop;
+    document.getElementById('sm-svc-row').style.display='';
+  }
+  document.getElementById('tc-chk').checked=false;
+  document.getElementById('btn-sub').disabled=true;
+  goSc(3);
+}
+
+// ── SUBMIT ──
+async function submitReg(){
+  if(!document.getElementById('tc-chk').checked){ document.getElementById('err-tc').classList.add('show'); return; }
+  document.getElementById('err-tc').classList.remove('show');
+  const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Saving…';
+  let fbName,email,ackId='';
+  if(arrival==='walkin'){ fbName=document.getElementById('wi-fb').value.trim(); email=document.getElementById('wi-em').value.trim(); }
+  else { fbName=selBooking.fbName; email=selBooking.email||''; ackId=selBooking.id; }
+  const id=uid();
+  const reg={id,date:todayPH(),fbName,email,arrType:arrival,ackId,time:timePH()};
+  const ref='CL-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  try{ await gasCall('saveRegistration',reg); }
+  catch(e){
+    const pend=JSON.parse(localStorage.getItem('cl_kiosk_pending')||'[]');
+    pend.push(reg); localStorage.setItem('cl_kiosk_pending',JSON.stringify(pend));
+  }
+  if(arrival==='walkin'){
+    const cl={id:id+'c',fbName,email,type:'walkin',added:todayPH()};
+    try{ await gasCall('saveClient',cl); }catch(e){}
+  }
+  document.getElementById('done-name').textContent=fbName;
+  document.getElementById('done-ref').textContent=ref;
+  goSc(4);
+  // Auto-reset
+  const secs=getReset();
+  const prog=document.getElementById('reset-prog');
+  document.getElementById('reset-lbl').textContent='Resetting in '+secs+' seconds…';
+  prog.style.transition='none'; prog.style.width='100%';
+  setTimeout(()=>{ prog.style.transition='width '+secs+'s linear'; prog.style.width='0%'; },100);
+  resetTimer=setTimeout(()=>{ if(document.getElementById('sc4').classList.contains('active')) resetKiosk(); },secs*1000);
+}
+
+// ── RESET ──
+function resetKiosk(){
+  if(resetTimer){ clearTimeout(resetTimer); resetTimer=null; }
+  arrival=''; selBooking=null;
+  document.getElementById('ac-wi').classList.remove('sel');
+  document.getElementById('ac-bk').classList.remove('sel');
+  document.getElementById('btn1').disabled=true;
+  document.getElementById('wi-fb').value=''; document.getElementById('wi-em').value='';
+  document.getElementById('wi-fb').classList.remove('err'); document.getElementById('wi-em').classList.remove('err');
+  document.getElementById('tc-chk').checked=false;
+  const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Complete Check-in';
+  document.getElementById('steps-bar').style.display='';
+  goSc(1); checkConn(true);
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const t=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Manila'});
+  const d=new Date().toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric',timeZone:'Asia/Manila'});
+  document.getElementById('footer-txt').textContent='ClickLounge Studio · '+d+' · '+t+' PST';
+}
+updateClock(); setInterval(updateClock,30000);
+
+// ── INIT ──
+checkConn();
+setInterval(()=>checkConn(true),2*60*1000);
+</script>
+</body>
+</html>
