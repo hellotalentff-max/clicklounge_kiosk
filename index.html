@@ -194,7 +194,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
     <div class="brow"><button class="btn-back" onclick="goSc(1)">← Back</button><button class="btn-main" onclick="validateStep2()">Continue →</button></div>
   </div>
 
-  <!-- Screen 3: T&C -->
+  <!-- Screen 3: T&C + Consent -->
   <div class="screen" id="sc3">
     <div class="card">
       <div class="ct">Review your details</div>
@@ -205,11 +205,35 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
     </div>
     <div class="card">
       <div class="ct">Terms and Conditions</div>
-      <div class="tc-scroll">By registering, I agree that ClickLounge Studio is not liable for personal belongings left on the premises. All digital files remain property of ClickLounge Studio until full payment is received. No refunds after the session has started. Photos may be used for promotional purposes unless I opt out in writing prior to the session. I consent to the collection of my contact information for booking and communication purposes.</div>
-      <div class="tc-row"><input type="checkbox" id="tc-chk" onchange="document.getElementById('btn-sub').disabled=!this.checked;"><span>I have read and agree to the Terms and Conditions</span></div>
+      <div class="tc-scroll">By registering, I agree that ClickLounge Studio is not liable for personal belongings left on the premises. All digital files remain property of ClickLounge Studio until full payment is received. No refunds after the session has started. I consent to the collection of my contact information for booking and communication purposes.</div>
+      <div class="tc-row"><input type="checkbox" id="tc-chk" onchange="checkSubmitReady()"><span>I have read and agree to the Terms and Conditions</span></div>
     </div>
+
+    <!-- Social Media Consent -->
+    <div class="card" style="border:2px solid rgba(81,137,125,0.3);background:rgba(81,137,125,0.04);">
+      <div class="ct" style="color:var(--teal);margin-bottom:4px;">📸 Social Media Consent</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;">
+        May <strong>ClickLounge Studio</strong> post photos or videos from your session on our social media pages (Facebook, Instagram, TikTok) for marketing purposes?
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <label id="smc-yes-lbl" onclick="selectConsent('yes')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px;border:2px solid var(--light2);border-radius:12px;cursor:pointer;transition:all 0.2s;text-align:center;gap:8px;">
+          <span style="font-size:36px;">✅</span>
+          <span style="font-size:14px;font-weight:600;color:var(--text);">Yes, you may post</span>
+          <span style="font-size:11px;color:var(--muted);">I allow ClickLounge to feature my session online</span>
+          <input type="radio" name="smc" id="smc-yes" value="yes" style="display:none;">
+        </label>
+        <label id="smc-no-lbl" onclick="selectConsent('no')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px;border:2px solid var(--light2);border-radius:12px;cursor:pointer;transition:all 0.2s;text-align:center;gap:8px;">
+          <span style="font-size:36px;">🚫</span>
+          <span style="font-size:14px;font-weight:600;color:var(--text);">No, keep it private</span>
+          <span style="font-size:11px;color:var(--muted);">Please do not post my photos online</span>
+          <input type="radio" name="smc" id="smc-no" value="no" style="display:none;">
+        </label>
+      </div>
+      <div id="err-smc" class="err-msg" style="margin-top:10px;">Please select a social media consent option.</div>
+    </div>
+
     <div id="err-tc" class="err-msg">Please agree to the Terms and Conditions.</div>
-    <div class="brow"><button class="btn-back" onclick="goSc(2)">← Back</button><button class="btn-main gold" id="btn-sub" onclick="submitReg()" disabled>Complete Check-in</button></div>
+    <div class="brow"><button class="btn-back" onclick="goSc(2)">← Back</button><button class="btn-main gold" id="btn-sub" onclick="submitReg()" disabled>Complete Check-in ✓</button></div>
   </div>
 
   <!-- Screen 4: Success -->
@@ -219,6 +243,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div class="success-title">You're checked in!</div>
       <div class="success-sub" style="margin-bottom:4px;">Thank you, <strong id="done-name"></strong>.</div>
       <div class="success-sub">Please proceed to the waiting area.<br>Our staff will call your name shortly.</div>
+      <div id="done-consent" style="font-size:12px;color:var(--muted);margin:10px 0;padding:8px 12px;background:var(--light);border-radius:8px;line-height:1.5;"></div>
       <div class="ref-box"><div class="ref-lbl">Reference Code</div><div class="ref-code" id="done-ref"></div></div>
       <div class="success-sub" style="font-size:11px;margin-bottom:12px;">Show this code to our staff when called.</div>
       <div id="reset-bar"><div id="reset-prog"></div></div>
@@ -539,15 +564,47 @@ function validateStep2(){
 }
 
 // ── SUBMIT ──
+function selectConsent(val){
+  const yes = document.getElementById('smc-yes');
+  const no  = document.getElementById('smc-no');
+  const yLbl= document.getElementById('smc-yes-lbl');
+  const nLbl= document.getElementById('smc-no-lbl');
+  if(val==='yes'){ if(yes) yes.checked=true; }
+  else           { if(no)  no.checked=true; }
+  // Style selected card
+  if(yLbl) yLbl.style.cssText = yLbl.style.cssText.replace(/border:[^;]+/,'') +
+    (val==='yes' ? 'border:2px solid var(--teal);background:rgba(81,137,125,0.08);' : 'border:2px solid var(--light2);background:none;');
+  if(nLbl) nLbl.style.cssText = nLbl.style.cssText.replace(/border:[^;]+/,'') +
+    (val==='no'  ? 'border:2px solid var(--danger);background:rgba(192,84,74,0.06);' : 'border:2px solid var(--light2);background:none;');
+  document.getElementById('err-smc').classList.remove('show');
+  checkSubmitReady();
+}
+
+function checkSubmitReady(){
+  const tcOk  = document.getElementById('tc-chk')?.checked;
+  const smcOk = document.getElementById('smc-yes')?.checked || document.getElementById('smc-no')?.checked;
+  const btn   = document.getElementById('btn-sub');
+  if(btn) btn.disabled = !(tcOk && smcOk);
+}
+
 async function submitReg(){
-  if(!document.getElementById('tc-chk').checked){ document.getElementById('err-tc').classList.add('show'); return; }
+  const tcOk  = document.getElementById('tc-chk')?.checked;
+  const smcYes= document.getElementById('smc-yes');
+  const smcNo = document.getElementById('smc-no');
+  const smcOk = smcYes?.checked || smcNo?.checked;
+
+  if(!tcOk){   document.getElementById('err-tc').classList.add('show'); return; }
+  if(!smcOk){  document.getElementById('err-smc').classList.add('show'); return; }
   document.getElementById('err-tc').classList.remove('show');
+  document.getElementById('err-smc').classList.remove('show');
+
+  const socialConsent = smcYes?.checked ? 'yes' : 'no';
   const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Saving…';
   let fbName,email,ackId='';
   if(arrival==='walkin'){ fbName=document.getElementById('wi-fb').value.trim(); email=document.getElementById('wi-em').value.trim(); }
   else { fbName=selBooking.fbName; email=selBooking.email||''; ackId=selBooking.id; }
   const id=uid();
-  const reg={id,date:todayPH(),fbName,email,arrType:arrival,ackId,time:timePH()};
+  const reg={id,date:todayPH(),fbName,email,arrType:arrival,ackId,time:timePH(),socialConsent};
   const ref='CL-'+Math.random().toString(36).slice(2,6).toUpperCase();
   try{ await gasCall('saveRegistration',reg); }
   catch(e){
@@ -555,11 +612,16 @@ async function submitReg(){
     pend.push(reg); localStorage.setItem('cl_kiosk_pending',JSON.stringify(pend));
   }
   if(arrival==='walkin'){
-    const cl={id:id+'c',fbName,email,type:'walkin',added:todayPH()};
+    const cl={id:id+'c',fbName,email,socialConsent,type:'walkin',added:todayPH()};
     try{ await gasCall('saveClient',cl); }catch(e){}
   }
   document.getElementById('done-name').textContent=fbName;
   document.getElementById('done-ref').textContent=ref;
+  // Show consent confirmation on success screen
+  const doneConsent = document.getElementById('done-consent');
+  if(doneConsent) doneConsent.textContent = socialConsent==='yes'
+    ? '✅ You have allowed us to post your session on social media.'
+    : '🚫 Your session will be kept private — we will not post your photos online.';
   goSc(4);
   // Auto-reset
   const secs=getReset();
@@ -580,7 +642,14 @@ function resetKiosk(){
   document.getElementById('wi-fb').value=''; document.getElementById('wi-em').value='';
   document.getElementById('wi-fb').classList.remove('err'); document.getElementById('wi-em').classList.remove('err');
   document.getElementById('tc-chk').checked=false;
-  const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Complete Check-in';
+  // Reset social media consent
+  const sy = document.getElementById('smc-yes'); if(sy) sy.checked=false;
+  const sn = document.getElementById('smc-no');  if(sn) sn.checked=false;
+  const yl = document.getElementById('smc-yes-lbl');
+  const nl = document.getElementById('smc-no-lbl');
+  if(yl) yl.style.border='2px solid var(--light2)'; yl&&(yl.style.background='none');
+  if(nl) nl.style.border='2px solid var(--light2)'; nl&&(nl.style.background='none');
+  const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Complete Check-in ✓';
   document.getElementById('steps-bar').style.display='';
   goSc(1); checkConn(true);
 }
