@@ -478,23 +478,38 @@ function psub(){
 // ── BOOKINGS ──
 async function loadBookings(){
   const el=document.getElementById('bk-list');
-  el.innerHTML='<div class="loading"><div class="spinner"></div>Loading bookings…</div>';
+  el.innerHTML='<div class="loading"><div class="spinner"></div>Loading today\'s bookings…</div>';
   try{
     const d=await gasCall('getAcknowledgements');
-    const list=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
+    const all=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
+    // Only show bookings whose bookDate matches today PH time
+    const today=todayPH();
+    const list=all.filter(b=>{
+      const bd=String(b.bookDate||'').slice(0,10);
+      return bd===today;
+    });
     bookings=list; isOnline=true; renderBookings(list);
   }catch(e){
     isOnline=false;
     el.innerHTML='<div class="no-bk">⚠ Could not load bookings.<br><span style="font-size:10px;">Check your internet. You can still register as walk-in.</span></div>';
   }
 }
+
 function renderBookings(list){
-  if(!list||!list.length){ document.getElementById('bk-list').innerHTML='<div class="no-bk">No bookings found.<br>Please see our staff.</div>'; return; }
-  document.getElementById('bk-list').innerHTML='<div class="blist">'+list.map(b=>{
+  const el=document.getElementById('bk-list');
+  if(!list||!list.length){
+    el.innerHTML='<div class="no-bk">No bookings for today.<br><span style="font-size:11px;color:var(--muted);">If you have a booking, please see our staff.</span></div>';
+    return;
+  }
+  el.innerHTML='<div class="blist">'+list.map(b=>{
     const ini=(b.fbName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const slot=b.timeSlot||'';
     return `<div class="bitem" id="bi-${b.id}" onclick="pickBk('${b.id}')">
       <div class="bav">${ini}</div>
-      <div style="flex:1;min-width:0;"><div class="bn">${b.fbName}</div><div class="bs">${b.service||'—'} · ₱${fmt(+b.downpayment)} ${b.mop}</div></div>
+      <div style="flex:1;min-width:0;">
+        <div class="bn">${b.fbName}</div>
+        <div class="bs">${b.service||'—'} · ${slot?slot+' · ':''}₱${fmt(+b.downpayment)} ${b.mop}</div>
+      </div>
       <div class="bchk">✓</div>
     </div>`;
   }).join('')+'</div>';
