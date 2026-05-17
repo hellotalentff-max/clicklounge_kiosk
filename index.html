@@ -182,6 +182,19 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
         <div id="err-wi" class="err-msg">Please enter your Facebook name.</div>
         <div class="field"><label>Facebook Name *</label><input type="text" id="wi-fb" placeholder="Your Facebook display name" autocomplete="off"></div>
         <div class="field"><label>Email Address *</label><input type="email" id="wi-em" placeholder="email@example.com" autocomplete="off" required></div>
+
+        <!-- Optional fields toggle -->
+        <button type="button" onclick="toggleKioskOptional()" id="kiosk-opt-btn" style="background:none;border:1.5px dashed rgba(81,137,125,0.4);color:var(--teal);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;width:100%;margin-top:4px;font-family:inherit;transition:all 0.2s;">
+          ➕ Add birthday & mobile <span style="font-size:11px;font-weight:400;opacity:0.7;">(optional)</span>
+        </button>
+        <div id="kiosk-optional" style="display:none;margin-top:12px;">
+          <div class="field"><label>Mobile Number <span style="font-size:11px;font-weight:400;color:var(--muted);">(optional)</span></label>
+            <input type="tel" id="wi-phone" placeholder="09xx xxx xxxx" autocomplete="off" inputmode="numeric">
+          </div>
+          <div class="field"><label>Birthday <span style="font-size:11px;font-weight:400;color:var(--muted);">(optional — for birthday treats!)</span></label>
+            <input type="date" id="wi-bday" autocomplete="off">
+          </div>
+        </div>
       </div>
     </div>
     <div id="bk-sec" style="display:none;">
@@ -201,6 +214,8 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div class="srow"><span class="sl">Arrival</span><span class="sv" id="sm-arr">—</span></div>
       <div class="srow"><span class="sl">Facebook Name</span><span class="sv" id="sm-fb">—</span></div>
       <div class="srow"><span class="sl">Email</span><span class="sv" id="sm-em">—</span></div>
+      <div class="srow" id="sm-phone-row" style="display:none;"><span class="sl">Mobile</span><span class="sv" id="sm-phone">—</span></div>
+      <div class="srow" id="sm-bday-row" style="display:none;"><span class="sl">Birthday</span><span class="sv" id="sm-bday">—</span></div>
       <div class="srow" id="sm-svc-row" style="display:none;"><span class="sl">Booking</span><span class="sv" id="sm-svc">—</span></div>
     </div>
     <div class="card">
@@ -560,10 +575,27 @@ function validateStep2(){
     document.getElementById('wi-em').classList.remove('err');
     document.getElementById('err-wi').classList.remove('show');
     document.getElementById('err-wi').textContent='Please enter your Facebook name.';
+
+    // Optional fields
+    const phone = (document.getElementById('wi-phone')?.value||'').trim();
+    const bday  = (document.getElementById('wi-bday')?.value||'').trim();
+
     document.getElementById('sm-arr').textContent='Walk-in';
     document.getElementById('sm-fb').textContent=fb;
     document.getElementById('sm-em').textContent=em;
     document.getElementById('sm-svc-row').style.display='none';
+
+    // Show optional in summary if filled
+    const phoneRow = document.getElementById('sm-phone-row');
+    const bdayRow  = document.getElementById('sm-bday-row');
+    if(phoneRow){ phoneRow.style.display = phone ? '' : 'none'; document.getElementById('sm-phone').textContent = phone; }
+    if(bdayRow){
+      bdayRow.style.display = bday ? '' : 'none';
+      if(bday){
+        const d = new Date(bday+'T00:00:00');
+        document.getElementById('sm-bday').textContent = d.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'});
+      }
+    }
   } else {
     if(!selBooking){ document.getElementById('err-bk').classList.add('show'); return; }
     document.getElementById('err-bk').classList.remove('show');
@@ -572,6 +604,10 @@ function validateStep2(){
     document.getElementById('sm-em').textContent=selBooking.email||'Not provided';
     document.getElementById('sm-svc').textContent=(selBooking.service||'—')+' · ₱'+fmt(+selBooking.downpayment)+' '+selBooking.mop;
     document.getElementById('sm-svc-row').style.display='';
+    const phoneRow = document.getElementById('sm-phone-row');
+    const bdayRow  = document.getElementById('sm-bday-row');
+    if(phoneRow) phoneRow.style.display='none';
+    if(bdayRow)  bdayRow.style.display='none';
   }
   document.getElementById('tc-chk').checked=false;
   document.getElementById('btn-sub').disabled=true;
@@ -579,7 +615,18 @@ function validateStep2(){
 }
 
 // ── SUBMIT ──
-function selectConsent(val){
+function toggleKioskOptional(){
+  const box = document.getElementById('kiosk-optional');
+  const btn = document.getElementById('kiosk-opt-btn');
+  if(!box) return;
+  const open = box.style.display !== 'none';
+  box.style.display = open ? 'none' : '';
+  btn.textContent   = open
+    ? '➕ Add birthday & mobile (optional)'
+    : '➖ Hide extra fields';
+}
+
+
   const yes = document.getElementById('smc-yes');
   const no  = document.getElementById('smc-no');
   const yLbl= document.getElementById('smc-yes-lbl');
@@ -616,8 +663,15 @@ async function submitReg(){
   const socialConsent = smcYes?.checked ? 'yes' : 'no';
   const btn=document.getElementById('btn-sub'); btn.disabled=true; btn.textContent='Saving…';
   let fbName,email,ackId='';
-  if(arrival==='walkin'){ fbName=document.getElementById('wi-fb').value.trim(); email=document.getElementById('wi-em').value.trim(); }
-  else { fbName=selBooking.fbName; email=selBooking.email||''; ackId=selBooking.id; }
+  if(arrival==='walkin'){
+    fbName = document.getElementById('wi-fb').value.trim();
+    email  = document.getElementById('wi-em').value.trim();
+  } else {
+    fbName=selBooking.fbName; email=selBooking.email||''; ackId=selBooking.id;
+  }
+  const phone = (document.getElementById('wi-phone')?.value||'').trim();
+  const bday  = (document.getElementById('wi-bday')?.value||'').trim();
+
   const id=uid();
   const reg={id,date:todayPH(),fbName,email,arrType:arrival,ackId,time:timePH(),socialConsent};
   const ref='CL-'+Math.random().toString(36).slice(2,6).toUpperCase();
@@ -627,7 +681,7 @@ async function submitReg(){
     pend.push(reg); localStorage.setItem('cl_kiosk_pending',JSON.stringify(pend));
   }
   if(arrival==='walkin'){
-    const cl={id:id+'c',fbName,email,socialConsent,type:'walkin',added:todayPH()};
+    const cl={id:id+'c',fbName,email,socialConsent,type:'walkin',added:todayPH(),phone,birthday:bday};
     try{ await gasCall('saveClient',cl); }catch(e){}
   }
   document.getElementById('done-name').textContent=fbName;
@@ -656,6 +710,11 @@ function resetKiosk(){
   document.getElementById('btn1').disabled=true;
   document.getElementById('wi-fb').value=''; document.getElementById('wi-em').value='';
   document.getElementById('wi-fb').classList.remove('err'); document.getElementById('wi-em').classList.remove('err');
+  const wiPhone = document.getElementById('wi-phone'); if(wiPhone) wiPhone.value='';
+  const wiBday  = document.getElementById('wi-bday');  if(wiBday)  wiBday.value='';
+  const optBox  = document.getElementById('kiosk-optional'); if(optBox) optBox.style.display='none';
+  const optBtn  = document.getElementById('kiosk-opt-btn');
+  if(optBtn) optBtn.textContent='➕ Add birthday & mobile (optional)';
   document.getElementById('tc-chk').checked=false;
   // Reset social media consent
   const sy = document.getElementById('smc-yes'); if(sy) sy.checked=false;
