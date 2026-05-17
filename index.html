@@ -141,7 +141,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
 <div class="hero">
   <span id="tap-hint">staff ⚙</span>
   <span id="tap-cnt"></span>
-  <div class="hero-ring" id="logo" onclick="handleTap()">📷</div>
+  <div class="hero-ring" id="logo" onclick="handleTap()" ontouchstart="handleTap();event.preventDefault();" style="cursor:pointer;user-select:none;-webkit-user-select:none;">📷</div>
   <h1>ClickLounge</h1>
   <p>Studio</p>
   <div class="hero-sub">Welcome! Please complete your check-in below.</div>
@@ -403,11 +403,14 @@ async function checkConn(silent=false){
 // ── TAP LOGO ──
 function handleTap(){
   tapCount++;
-  const c=document.getElementById('tap-cnt');
-  if(tapCount>=2&&tapCount<5){ c.style.display='block'; c.textContent=(5-tapCount)+' more…'; }
+  const c = document.getElementById('tap-cnt');
+  if(tapCount >= 2 && tapCount < 5){
+    c.style.display = 'block';
+    c.textContent   = (5 - tapCount) + ' more…';
+  }
   if(tapTimer) clearTimeout(tapTimer);
-  tapTimer=setTimeout(()=>{ tapCount=0; c.style.display='none'; },2000);
-  if(tapCount>=5){ tapCount=0; c.style.display='none'; openSettings(); }
+  tapTimer = setTimeout(function(){ tapCount = 0; if(c) c.style.display = 'none'; }, 3000);
+  if(tapCount >= 5){ tapCount = 0; if(c) c.style.display = 'none'; openSettings(); }
 }
 
 // ── SETTINGS ──
@@ -627,6 +630,7 @@ function toggleKioskOptional(){
 }
 
 
+function selectConsent(val){
   const yes = document.getElementById('smc-yes');
   const no  = document.getElementById('smc-no');
   const yLbl= document.getElementById('smc-yes-lbl');
