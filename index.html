@@ -183,17 +183,12 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
         <div class="field"><label>Facebook Name *</label><input type="text" id="wi-fb" placeholder="Your Facebook display name" autocomplete="off"></div>
         <div class="field"><label>Email Address *</label><input type="email" id="wi-em" placeholder="email@example.com" autocomplete="off" required></div>
 
-        <!-- Optional fields toggle -->
-        <button type="button" onclick="toggleKioskOptional()" id="kiosk-opt-btn" style="background:none;border:1.5px dashed rgba(81,137,125,0.4);color:var(--teal);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;width:100%;margin-top:4px;font-family:inherit;transition:all 0.2s;">
-          ➕ Add birthday & mobile <span style="font-size:11px;font-weight:400;opacity:0.7;">(optional)</span>
-        </button>
-        <div id="kiosk-optional" style="display:none;margin-top:12px;">
-          <div class="field"><label>Mobile Number <span style="font-size:11px;font-weight:400;color:var(--muted);">(optional)</span></label>
-            <input type="tel" id="wi-phone" placeholder="09xx xxx xxxx" autocomplete="off" inputmode="numeric">
-          </div>
-          <div class="field"><label>Birthday <span style="font-size:11px;font-weight:400;color:var(--muted);">(optional — for birthday treats!)</span></label>
-            <input type="date" id="wi-bday" autocomplete="off">
-          </div>
+        <!-- Required contact fields -->
+        <div class="field"><label>Mobile Number *</label>
+          <input type="tel" id="wi-phone" placeholder="09xx xxx xxxx" autocomplete="off" inputmode="numeric" required>
+        </div>
+        <div class="field"><label>Birthday *</label>
+          <input type="date" id="wi-bday" autocomplete="off" required>
         </div>
       </div>
     </div>
@@ -571,33 +566,43 @@ function validateStep2(){
   if(arrival==='walkin'){
     const fb=document.getElementById('wi-fb').value.trim();
     const em=document.getElementById('wi-em').value.trim();
-    if(!fb){ document.getElementById('wi-fb').classList.add('err'); document.getElementById('err-wi').classList.add('show'); return; }
-    document.getElementById('wi-fb').classList.remove('err');
-    if(!em){ document.getElementById('wi-em').classList.add('err'); document.getElementById('err-wi').textContent='Please enter your Facebook name and email address.'; document.getElementById('err-wi').classList.add('show'); return; }
-    if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){ document.getElementById('wi-em').classList.add('err'); document.getElementById('err-wi').textContent='Please enter a valid email address.'; document.getElementById('err-wi').classList.add('show'); return; }
-    document.getElementById('wi-em').classList.remove('err');
-    document.getElementById('err-wi').classList.remove('show');
-    document.getElementById('err-wi').textContent='Please enter your Facebook name.';
+    const phone=(document.getElementById('wi-phone')?.value||'').trim();
+    const bday=(document.getElementById('wi-bday')?.value||'').trim();
+    const errEl=document.getElementById('err-wi');
 
-    // Optional fields
-    const phone = (document.getElementById('wi-phone')?.value||'').trim();
-    const bday  = (document.getElementById('wi-bday')?.value||'').trim();
+    // Validate FB name
+    if(!fb){ document.getElementById('wi-fb').classList.add('err'); errEl.textContent='Please enter your Facebook name.'; errEl.classList.add('show'); return; }
+    document.getElementById('wi-fb').classList.remove('err');
+
+    // Validate email
+    if(!em){ document.getElementById('wi-em').classList.add('err'); errEl.textContent='Please enter your email address.'; errEl.classList.add('show'); return; }
+    if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){ document.getElementById('wi-em').classList.add('err'); errEl.textContent='Please enter a valid email address.'; errEl.classList.add('show'); return; }
+    document.getElementById('wi-em').classList.remove('err');
+
+    // Validate phone
+    if(!phone){ document.getElementById('wi-phone').classList.add('err'); errEl.textContent='Please enter your mobile number.'; errEl.classList.add('show'); return; }
+    document.getElementById('wi-phone').classList.remove('err');
+
+    // Validate birthday
+    if(!bday){ document.getElementById('wi-bday').classList.add('err'); errEl.textContent='Please enter your birthday.'; errEl.classList.add('show'); return; }
+    document.getElementById('wi-bday').classList.remove('err');
+
+    errEl.classList.remove('show');
+    errEl.textContent='Please enter your Facebook name.';
 
     document.getElementById('sm-arr').textContent='Walk-in';
     document.getElementById('sm-fb').textContent=fb;
     document.getElementById('sm-em').textContent=em;
     document.getElementById('sm-svc-row').style.display='none';
 
-    // Show optional in summary if filled
+    // Show phone + birthday in summary
     const phoneRow = document.getElementById('sm-phone-row');
     const bdayRow  = document.getElementById('sm-bday-row');
-    if(phoneRow){ phoneRow.style.display = phone ? '' : 'none'; document.getElementById('sm-phone').textContent = phone; }
+    if(phoneRow){ phoneRow.style.display = ''; document.getElementById('sm-phone').textContent = phone; }
     if(bdayRow){
-      bdayRow.style.display = bday ? '' : 'none';
-      if(bday){
-        const d = new Date(bday+'T00:00:00');
-        document.getElementById('sm-bday').textContent = d.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'});
-      }
+      bdayRow.style.display = '';
+      const d = new Date(bday+'T00:00:00');
+      document.getElementById('sm-bday').textContent = d.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'});
     }
   } else {
     if(!selBooking){ document.getElementById('err-bk').classList.add('show'); return; }
@@ -618,17 +623,6 @@ function validateStep2(){
 }
 
 // ── SUBMIT ──
-function toggleKioskOptional(){
-  const box = document.getElementById('kiosk-optional');
-  const btn = document.getElementById('kiosk-opt-btn');
-  if(!box) return;
-  const open = box.style.display !== 'none';
-  box.style.display = open ? 'none' : '';
-  btn.textContent   = open
-    ? '➕ Add birthday & mobile (optional)'
-    : '➖ Hide extra fields';
-}
-
 
 function selectConsent(val){
   const yes = document.getElementById('smc-yes');
@@ -714,11 +708,8 @@ function resetKiosk(){
   document.getElementById('btn1').disabled=true;
   document.getElementById('wi-fb').value=''; document.getElementById('wi-em').value='';
   document.getElementById('wi-fb').classList.remove('err'); document.getElementById('wi-em').classList.remove('err');
-  const wiPhone = document.getElementById('wi-phone'); if(wiPhone) wiPhone.value='';
-  const wiBday  = document.getElementById('wi-bday');  if(wiBday)  wiBday.value='';
-  const optBox  = document.getElementById('kiosk-optional'); if(optBox) optBox.style.display='none';
-  const optBtn  = document.getElementById('kiosk-opt-btn');
-  if(optBtn) optBtn.textContent='➕ Add birthday & mobile (optional)';
+  const wiPhone = document.getElementById('wi-phone'); if(wiPhone){ wiPhone.value=''; wiPhone.classList.remove('err'); }
+  const wiBday  = document.getElementById('wi-bday');  if(wiBday) { wiBday.value='';  wiBday.classList.remove('err'); }
   document.getElementById('tc-chk').checked=false;
   // Reset social media consent
   const sy = document.getElementById('smc-yes'); if(sy) sy.checked=false;
