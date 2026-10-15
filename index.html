@@ -114,6 +114,11 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
 #reset-bar { background:var(--light2); border-radius:4px; height:4px; margin-top:14px; overflow:hidden; }
 #reset-prog { height:100%; background:var(--teal); width:100%; }
 
+
+/* QR check-in */
+.qr-box { width:176px; height:176px; margin:0 auto 12px; padding:8px; background:#fff; border:1px solid var(--light2); border-radius:10px; }
+.qr-box svg { display:block; width:100%; height:100%; }
+
 /* SETTINGS */
 #sc-settings { display:none; }
 #sc-settings.active { display:block; }
@@ -170,6 +175,13 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
         <div class="arr-card" id="ac-wi" onclick="pickArr('walkin')"><span class="ic">🚶</span><div class="lbl">Walk-in</div><div class="sub">No prior booking</div></div>
         <div class="arr-card" id="ac-bk" onclick="pickArr('booked')"><span class="ic">📅</span><div class="lbl">Booked</div><div class="sub">I have a reservation</div></div>
       </div>
+    </div>
+    <!-- QR: walk-ins can fill in their own details on their phone -->
+    <div class="card" id="qr-card" style="text-align:center;">
+      <div class="ct">📱 Walk-in? Use your own phone</div>
+      <div class="qr-box"><svg shape-rendering="crispEdges" role="img" aria-label="QR code: scan to check in on your phone" viewBox="0 0 41 41" class="segno"><path fill="#fff" d="M0 0h41v41h-41z"/><path class="qrline" stroke="#2f4f4f" d="M2 2.5h7m1 0h1m1 0h1m3 0h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h7m-37 1h1m5 0h1m1 0h1m1 0h2m3 0h3m1 0h2m2 0h1m6 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m2 0h2m2 0h2m3 0h1m1 0h1m1 0h1m2 0h1m4 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m3 0h1m2 0h1m1 0h1m1 0h1m5 0h3m2 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m3 0h2m5 0h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m2 0h2m3 0h2m3 0h1m1 0h1m2 0h3m3 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h1m5 0h6m1 0h1m1 0h1m-24 1h1m1 0h2m1 0h3m4 0h1m2 0h2m3 0h1m7 0h1m1 0h1m2 0h1m1 0h2m-37 1h1m1 0h1m5 0h1m1 0h1m1 0h6m6 0h1m1 0h1m1 0h2m1 0h1m2 0h2m-35 1h1m4 0h1m1 0h1m1 0h3m1 0h2m2 0h1m2 0h3m4 0h4m2 0h1m-32 1h1m3 0h1m1 0h1m4 0h2m2 0h2m2 0h6m4 0h3m-35 1h2m2 0h3m1 0h2m1 0h3m3 0h2m3 0h5m2 0h2m1 0h5m-37 1h1m1 0h4m3 0h1m1 0h1m1 0h4m2 0h2m3 0h10m1 0h2m-36 1h3m2 0h5m2 0h1m3 0h3m2 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-35 1h1m5 0h1m3 0h1m2 0h1m2 0h3m1 0h2m3 0h4m1 0h2m2 0h2m-34 1h1m2 0h2m1 0h10m1 0h1m4 0h1m7 0h2m-34 1h1m3 0h1m2 0h1m1 0h1m2 0h1m2 0h2m1 0h2m2 0h2m1 0h2m2 0h1m2 0h4m-37 1h1m2 0h4m1 0h1m2 0h1m1 0h5m1 0h1m2 0h1m2 0h7m2 0h3m-36 1h4m2 0h1m1 0h1m1 0h1m2 0h1m2 0h3m2 0h2m2 0h1m1 0h1m4 0h1m1 0h1m-34 1h2m1 0h2m1 0h1m4 0h1m2 0h3m2 0h1m1 0h1m2 0h2m1 0h1m1 0h2m3 0h1m-36 1h2m1 0h1m2 0h1m2 0h1m1 0h3m1 0h1m1 0h3m2 0h1m2 0h1m1 0h1m4 0h1m1 0h1m-34 1h6m1 0h1m3 0h1m2 0h2m3 0h5m2 0h4m-30 1h2m1 0h1m1 0h3m1 0h1m2 0h3m1 0h5m1 0h4m1 0h2m1 0h5m-37 1h1m1 0h2m2 0h1m2 0h2m1 0h4m2 0h1m1 0h7m3 0h1m1 0h1m1 0h2m-29 1h2m4 0h2m1 0h3m1 0h2m2 0h1m1 0h8m1 0h2m-36 1h3m2 0h2m5 0h5m1 0h2m1 0h1m1 0h3m2 0h2m1 0h4m-36 1h1m6 0h1m1 0h1m3 0h1m2 0h1m4 0h4m3 0h1m1 0h1m1 0h1m-31 1h1m1 0h5m1 0h3m1 0h2m2 0h1m2 0h2m2 0h1m1 0h7m1 0h1m-28 1h2m3 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-37 1h7m1 0h6m1 0h3m3 0h1m2 0h1m3 0h1m1 0h1m1 0h1m1 0h3m-37 1h1m5 0h1m1 0h2m1 0h1m2 0h1m5 0h1m1 0h1m1 0h1m2 0h2m3 0h1m2 0h1m-36 1h1m1 0h3m1 0h1m2 0h2m3 0h2m2 0h1m3 0h1m3 0h1m1 0h6m1 0h2m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h3m1 0h2m1 0h4m3 0h1m1 0h2m1 0h1m1 0h1m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m3 0h5m1 0h2m1 0h1m1 0h4m1 0h3m-35 1h1m5 0h1m2 0h1m1 0h1m4 0h1m3 0h1m1 0h1m1 0h2m1 0h1m1 0h6m-35 1h7m1 0h2m1 0h1m1 0h3m1 0h1m1 0h1m2 0h6m1 0h1m2 0h5"/></svg></div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;">Scan this with your phone camera and fill in your details yourself &mdash; they go straight into our system.<br>
+        <span style="font-size:11px;">No phone? Tap <strong>Walk-in</strong> above and type your details here.</span></div>
     </div>
     <button class="btn-main" id="btn1" onclick="goSc(2)" disabled>Continue →</button>
   </div>
@@ -243,6 +255,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
     </div>
 
     <div id="err-tc" class="err-msg">Please agree to the Terms and Conditions.</div>
+    <div id="err-save" class="err-msg"></div>
     <div class="brow"><button class="btn-back" onclick="goSc(2)">← Back</button><button class="btn-main gold" id="btn-sub" onclick="submitReg()" disabled>Complete Check-in ✓</button></div>
   </div>
 
@@ -367,6 +380,8 @@ function gasCall(action, payload={}) {
 // ── STATE ──
 let arrival='', selBooking=null, bookings=[], isOnline=false;
 let tapCount=0, tapTimer=null, pinBuf='', resetTimer=null;
+// Opened from the walk-in QR code on a client's own phone
+const QR_MODE = /[?&]mode=walkin\b/.test(location.search);
 
 // ── CONNECTION ──
 async function checkConn(silent=false){
@@ -673,14 +688,27 @@ async function submitReg(){
   const id=uid();
   const reg={id,date:todayPH(),fbName,email,arrType:arrival,ackId,time:timePH(),socialConsent};
   const ref='CL-'+Math.random().toString(36).slice(2,6).toUpperCase();
-  try{ await gasCall('saveRegistration',reg); }
+  // On a client's own phone there is no staff tablet to retry later, so retry
+  // here and say so out loud if it still fails, instead of queueing silently.
+  const call = QR_MODE
+    ? async (a,p)=>{ try{ return await gasCall(a,p); }catch(e1){ await new Promise(r=>setTimeout(r,1200)); return await gasCall(a,p); } }
+    : gasCall;
+  document.getElementById('err-save').classList.remove('show');
+  try{ await call('saveRegistration',reg); }
   catch(e){
+    if(QR_MODE){
+      const es=document.getElementById('err-save');
+      es.textContent='We could not save your check-in. Please check your internet and try again, or ask our staff for help.';
+      es.classList.add('show');
+      btn.disabled=false; btn.textContent='Complete Check-in ✓';
+      return;
+    }
     const pend=JSON.parse(localStorage.getItem('cl_kiosk_pending')||'[]');
     pend.push(reg); localStorage.setItem('cl_kiosk_pending',JSON.stringify(pend));
   }
   if(arrival==='walkin'){
     const cl={id:id+'c',fbName,email,socialConsent,type:'walkin',added:todayPH(),phone,birthday:bday};
-    try{ await gasCall('saveClient',cl); }catch(e){}
+    try{ await call('saveClient',cl); }catch(e){}
   }
   document.getElementById('done-name').textContent=fbName;
   document.getElementById('done-ref').textContent=ref;
@@ -690,6 +718,7 @@ async function submitReg(){
     ? '✅ You have allowed us to post your session on social media.'
     : '🚫 Your session will be kept private — we will not post your photos online.';
   goSc(4);
+  if(QR_MODE){ ['reset-bar','reset-lbl'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; }); return; }
   // Auto-reset
   const secs=getReset();
   const prog=document.getElementById('reset-prog');
@@ -732,6 +761,13 @@ function updateClock(){
 updateClock(); setInterval(updateClock,30000);
 
 // ── INIT ──
+if(QR_MODE){
+  // Straight to the walk-in form; no kiosk-only bits
+  document.getElementById('qr-card').style.display='none';
+  document.getElementById('tap-hint').style.display='none';
+  document.querySelector('.hero-sub').textContent='Welcome! Please fill in your details to check in.';
+  pickArr('walkin'); goSc(2);
+}
 checkConn();
 setInterval(()=>checkConn(true),2*60*1000);
 </script>
