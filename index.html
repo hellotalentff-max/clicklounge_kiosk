@@ -267,6 +267,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div class="success-sub" style="margin-bottom:4px;">Thank you, <strong id="done-name"></strong>.</div>
       <div class="success-sub">Please proceed to the waiting area.<br>Our staff will call your name shortly.</div>
       <div id="done-consent" style="font-size:12px;color:var(--muted);margin:10px 0;padding:8px 12px;background:var(--light);border-radius:8px;line-height:1.5;"></div>
+      <div id="done-late" style="display:none;font-size:12.5px;color:var(--text,#1e3333);text-align:left;margin:10px 0;padding:10px 12px;background:rgba(192,84,74,.08);border:1px solid rgba(192,84,74,.3);border-radius:8px;line-height:1.55;"></div>
       <div class="ref-box"><div class="ref-lbl">Reference Code</div><div class="ref-code" id="done-ref"></div></div>
       <div class="success-sub" style="font-size:11px;margin-bottom:12px;">Show this code to our staff when called.</div>
       <div id="reset-bar"><div id="reset-prog"></div></div>
@@ -717,6 +718,10 @@ async function submitReg(){
   if(doneConsent) doneConsent.textContent = socialConsent==='yes'
     ? '✅ You have allowed us to post your session on social media.'
     : '🚫 Your session will be kept private — we will not post your photos online.';
+  const doneLate=document.getElementById('done-late');
+  const lateBy=arrival==='booked'?lateArrival(selBooking,reg.time):'';
+  doneLate.innerHTML=lateBy?'⏰ <strong>Late Fee:</strong> You arrived after your '+lateBy+' arrival time, so a <strong>₱'+LATE_FEE+' Late Fee</strong> will be added to your bill. Our staff will assist you.':'';
+  doneLate.style.display=lateBy?'':'none';
   goSc(4);
   if(QR_MODE){ ['reset-bar','reset-lbl'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; }); return; }
   // Auto-reset
@@ -726,6 +731,33 @@ async function submitReg(){
   prog.style.transition='none'; prog.style.width='100%';
   setTimeout(()=>{ prog.style.transition='width '+secs+'s linear'; prog.style.width='0%'; },100);
   resetTimer=setTimeout(()=>{ if(document.getElementById('sc4').classList.contains('active')) resetKiosk(); },secs*1000);
+}
+
+// ── LATE FEE ──
+// Same rule as the POS: a booked client who checks in more than 15 minutes after their arrival
+// time owes a ₱200 Late Fee. Arrival time = the slot, or 1.5 hours before it for HMU packages.
+var LATE_FEE=200, LATE_GRACE_MIN=15, LATE_HMU_EARLY_MIN=90;
+function hasHMU(pkgName){
+  var p=String(pkgName||'');
+  if(/^(the look lab|clicklounge birthday experience)\b/i.test(p)) return /\b(signature|prestige)\b/i.test(p)&&/(styleshots|coat code|angelic muse)/i.test(p);
+  return /(couple styleshots promo|glowing mom|vip grad glam|radiant mama)/i.test(p);
+}
+function clockMin(t){
+  var m=String(t||'').match(/(?:^|\D)(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)/i);
+  if(!m) return null;
+  var h=parseInt(m[1],10), mi=parseInt(m[2],10);
+  if(/PM/i.test(m[3])&&h<12) h+=12;
+  if(/AM/i.test(m[3])&&h===12) h=0;
+  return h*60+mi;
+}
+function minToClock(m){ var h=Math.floor(m/60), mi=m%60, ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+String(mi).padStart(2,'0')+' '+ap; }
+// The arrival time this check-in missed, or '' if the client is not late
+function lateArrival(b, checkIn){
+  if(!b) return '';
+  var s=clockMin(b.timeSlot), t=clockMin(checkIn);
+  if(s==null||t==null) return '';
+  var due=s-(hasHMU(b.service)?LATE_HMU_EARLY_MIN:0);
+  return t-due>LATE_GRACE_MIN ? minToClock(due) : '';
 }
 
 // ── RESET ──
