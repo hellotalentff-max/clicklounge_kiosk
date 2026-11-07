@@ -395,7 +395,7 @@ async function checkConn(silent=false){
   try{
     banner.className=''; banner.style.display='';
     banner.textContent='Connecting…'; banner.style.background='rgba(81,137,125,0.15)'; banner.style.color='var(--teal)';
-    await gasCall('getAll');
+    await gasCall('ping');
     if(!silent){ banner.className='ok'; banner.textContent='✓ Connected'; setTimeout(()=>{ banner.style.display='none'; },3000); }
     dot.className='on'; dot.textContent='● live'; isOnline=true; return true;
   }catch(e){
@@ -405,7 +405,7 @@ async function checkConn(silent=false){
     dot.className='off'; dot.textContent='● offline'; isOnline=false;
     // Silent auto-retry after 10s
     setTimeout(async ()=>{
-      if(!isOnline){ try{ await gasCall('getAll'); banner.className='ok'; banner.textContent='✓ Connected'; dot.className='on'; dot.textContent='● live'; isOnline=true; setTimeout(()=>{ banner.style.display='none'; },3000); }catch(e2){} }
+      if(!isOnline){ try{ await gasCall('ping'); banner.className='ok'; banner.textContent='✓ Connected'; dot.className='on'; dot.textContent='● live'; isOnline=true; setTimeout(()=>{ banner.style.display='none'; },3000); }catch(e2){} }
     }, 10000);
     return false;
   }
@@ -463,7 +463,7 @@ async function testUrl(saved=false){
   const url=document.getElementById('set-url').value.trim();
   const prev=getUrl();
   try{
-    await gasCall('getAll');
+    await gasCall('ping');
     r.style.color='var(--success)'; r.textContent='✓ Connection successful!'+(saved?' URL saved.':'');
     isOnline=true; document.getElementById('set-dot').className='conn-dot green'; document.getElementById('set-status').textContent='Connected ✓';
     checkConn(true);
@@ -509,7 +509,7 @@ async function loadBookings(){
   const el=document.getElementById('bk-list');
   el.innerHTML='<div class="loading"><div class="spinner"></div>Loading today\'s bookings…</div>';
   try{
-    const d=await gasCall('getAcknowledgements');
+    const d=await gasCall('kioskTodayBookings');
     const all=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
     // Only show bookings whose bookDate matches today PH time
     const today=todayPH();
@@ -537,7 +537,7 @@ function renderBookings(list){
       <div class="bav">${ini}</div>
       <div style="flex:1;min-width:0;">
         <div class="bn">${b.fbName}</div>
-        <div class="bs">${b.service||'—'} · ${slot?slot+' · ':''}₱${fmt(+b.downpayment)} ${b.mop}</div>
+        <div class="bs">${b.service||'—'}${slot?' · '+slot:''}</div>
       </div>
       <div class="bchk">✓</div>
     </div>`;
@@ -625,8 +625,8 @@ function validateStep2(){
     document.getElementById('err-bk').classList.remove('show');
     document.getElementById('sm-arr').textContent='Booked Appointment';
     document.getElementById('sm-fb').textContent=selBooking.fbName;
-    document.getElementById('sm-em').textContent=selBooking.email||'Not provided';
-    document.getElementById('sm-svc').textContent=(selBooking.service||'—')+' · ₱'+fmt(+selBooking.downpayment)+' '+selBooking.mop;
+    document.getElementById('sm-em').textContent=selBooking.email||'On your booking';
+    document.getElementById('sm-svc').textContent=(selBooking.service||'—')+(selBooking.timeSlot?' · '+selBooking.timeSlot:'');
     document.getElementById('sm-svc-row').style.display='';
     const phoneRow = document.getElementById('sm-phone-row');
     const bdayRow  = document.getElementById('sm-bday-row');
