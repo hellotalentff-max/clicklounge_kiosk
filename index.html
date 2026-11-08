@@ -509,7 +509,12 @@ async function loadBookings(){
   const el=document.getElementById('bk-list');
   el.innerHTML='<div class="loading"><div class="spinner"></div>Loading today\'s bookings…</div>';
   try{
-    const d=await gasCall('kioskTodayBookings');
+    // kioskTodayBookings needs Gate.gs with gateDispatch_. Until that is deployed the script
+    // answers "Unknown action", so fall back to the old list. Once the gate enforces, the old
+    // list is refused anyway, so this fallback never leaks anything after that.
+    let d;
+    try{ d=await gasCall('kioskTodayBookings'); }
+    catch(e){ d=await gasCall('getAcknowledgements'); }
     const all=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
     // Only show bookings whose bookDate matches today PH time
     const today=todayPH();
