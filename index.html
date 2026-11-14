@@ -106,6 +106,8 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
 @keyframes spin { to{transform:rotate(360deg);} }
 
 .success-ring { width:70px; height:70px; border-radius:50%; background:rgba(61,140,110,0.1); border:2px solid rgba(61,140,110,0.3); display:flex; align-items:center; justify-content:center; margin:4px auto 14px; font-size:26px; }
+.late-box { text-align:left; margin:12px 0; padding:14px 16px; background:#fdecea; border:2px solid #c0544a; border-radius:12px; color:#7a2a22; font-size:14px; line-height:1.55; }
+.late-box .late-hd { font-size:17px; font-weight:700; color:#c0544a; margin-bottom:4px; }
 .success-title { font-size:18px; font-weight:600; color:var(--slate); text-align:center; margin-bottom:6px; }
 .success-sub { font-size:12px; color:var(--muted); text-align:center; line-height:1.7; }
 .ref-box { background:rgba(81,137,125,0.08); border:1px solid rgba(81,137,125,0.2); border-radius:9px; padding:14px 16px; text-align:center; margin:16px 0; }
@@ -224,6 +226,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div class="srow" id="sm-phone-row" style="display:none;"><span class="sl">Mobile</span><span class="sv" id="sm-phone">—</span></div>
       <div class="srow" id="sm-bday-row" style="display:none;"><span class="sl">Birthday</span><span class="sv" id="sm-bday">—</span></div>
       <div class="srow" id="sm-svc-row" style="display:none;"><span class="sl">Booking</span><span class="sv" id="sm-svc">—</span></div>
+      <div id="sm-late" class="late-box" style="display:none;"></div>
     </div>
     <div class="card">
       <div class="ct">Terms and Conditions</div>
@@ -267,7 +270,7 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div class="success-sub" style="margin-bottom:4px;">Thank you, <strong id="done-name"></strong>.</div>
       <div class="success-sub">Please proceed to the waiting area.<br>Our staff will call your name shortly.</div>
       <div id="done-consent" style="font-size:12px;color:var(--muted);margin:10px 0;padding:8px 12px;background:var(--light);border-radius:8px;line-height:1.5;"></div>
-      <div id="done-late" style="display:none;font-size:12.5px;color:var(--text,#1e3333);text-align:left;margin:10px 0;padding:10px 12px;background:rgba(192,84,74,.08);border:1px solid rgba(192,84,74,.3);border-radius:8px;line-height:1.55;"></div>
+      <div id="done-late" class="late-box" style="display:none;"></div>
       <div class="ref-box"><div class="ref-lbl">Reference Code</div><div class="ref-code" id="done-ref"></div></div>
       <div class="success-sub" style="font-size:11px;margin-bottom:12px;">Show this code to our staff when called.</div>
       <div id="reset-bar"><div id="reset-prog"></div></div>
@@ -638,6 +641,10 @@ function validateStep2(){
     if(phoneRow) phoneRow.style.display='none';
     if(bdayRow)  bdayRow.style.display='none';
   }
+  const smLate=document.getElementById('sm-late');
+  const lateNow=arrival==='booked'?lateArrival(selBooking,timePH()):'';
+  smLate.innerHTML=lateNow?lateMsg(lateNow):'';
+  smLate.style.display=lateNow?'':'none';
   document.getElementById('tc-chk').checked=false;
   document.getElementById('btn-sub').disabled=true;
   goSc(3);
@@ -725,7 +732,7 @@ async function submitReg(){
     : '🚫 Your session will be kept private — we will not post your photos online.';
   const doneLate=document.getElementById('done-late');
   const lateBy=arrival==='booked'?lateArrival(selBooking,reg.time):'';
-  doneLate.innerHTML=lateBy?'⏰ <strong>Late Fee:</strong> You arrived after your '+lateBy+' arrival time, so a <strong>₱'+LATE_FEE+' Late Fee</strong> will be added to your bill. Our staff will assist you.':'';
+  doneLate.innerHTML=lateBy?lateMsg(lateBy):'';
   doneLate.style.display=lateBy?'':'none';
   goSc(4);
   if(QR_MODE){ ['reset-bar','reset-lbl'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; }); return; }
@@ -756,6 +763,9 @@ function clockMin(t){
   return h*60+mi;
 }
 function minToClock(m){ var h=Math.floor(m/60), mi=m%60, ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+String(mi).padStart(2,'0')+' '+ap; }
+function lateMsg(due){
+  return '<div class="late-hd">⏰ Late Arrival · ₱'+LATE_FEE+' Late Fee</div>Your arrival time was <strong>'+due+'</strong>. Since you checked in more than '+LATE_GRACE_MIN+' minutes after it, a <strong>₱'+LATE_FEE+' Late Fee</strong> will be added to your bill. Our staff will assist you.';
+}
 // The arrival time this check-in missed, or '' if the client is not late
 function lateArrival(b, checkIn){
   if(!b) return '';
