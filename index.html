@@ -257,6 +257,21 @@ body { font-family:'Poppins',sans-serif; background:var(--light); color:var(--te
       <div id="err-smc" class="err-msg" style="margin-top:10px;">Please select a social media consent option.</div>
     </div>
 
+    <!-- Lead source: feeds the POS Pipeline -->
+    <div class="card">
+      <label for="find-us" class="ct" style="display:block;margin-bottom:8px;">How did you find us?</label>
+      <select id="find-us" onchange="checkSubmitReady()" style="width:100%;padding:13px 12px;font-size:15px;font-family:inherit;color:var(--text,#1e3333);background:#fff;border:1.5px solid rgba(81,137,125,.3);border-radius:10px;">
+        <option value="">Please choose one</option>
+        <option value="Facebook/IG Ad">Facebook or Instagram ad</option>
+        <option value="Facebook/IG Organic">Facebook or Instagram post</option>
+        <option value="Google">Google search</option>
+        <option value="Referral">A friend or family member</option>
+        <option value="Repeat Client">I've been here before</option>
+        <option value="Walk-in">I walked past the studio</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
     <div id="err-tc" class="err-msg">Please agree to the Terms and Conditions.</div>
     <div id="err-save" class="err-msg"></div>
     <div class="brow"><button class="btn-back" onclick="goSc(2)">← Back</button><button class="btn-main gold" id="btn-sub" onclick="submitReg()" disabled>Complete Check-in ✓</button></div>
@@ -646,6 +661,7 @@ function validateStep2(){
   smLate.innerHTML=lateNow?lateMsg(lateNow):'';
   smLate.style.display=lateNow?'':'none';
   document.getElementById('tc-chk').checked=false;
+  document.getElementById('find-us').value='';
   document.getElementById('btn-sub').disabled=true;
   goSc(3);
 }
@@ -672,7 +688,8 @@ function checkSubmitReady(){
   const tcOk  = document.getElementById('tc-chk')?.checked;
   const smcOk = document.getElementById('smc-yes')?.checked || document.getElementById('smc-no')?.checked;
   const btn   = document.getElementById('btn-sub');
-  if(btn) btn.disabled = !(tcOk && smcOk);
+  const srcOk = !!document.getElementById('find-us')?.value;
+  if(btn) btn.disabled = !(tcOk && smcOk && srcOk);
 }
 
 async function submitReg(){
@@ -719,6 +736,9 @@ async function submitReg(){
     const pend=JSON.parse(localStorage.getItem('cl_kiosk_pending')||'[]');
     pend.push(reg); localStorage.setItem('cl_kiosk_pending',JSON.stringify(pend));
   }
+  // Lead source for the POS Pipeline. Never holds up the check-in.
+  const findUs=document.getElementById('find-us')?.value||'';
+  if(findUs) gasCall('savePipeline',{id:ackId||id,type:'deal',name:fbName,email,source:findUs,updatedAt:todayPH(),updatedBy:'Kiosk'}).catch(()=>{});
   if(arrival==='walkin'){
     const cl={id:id+'c',fbName,email,socialConsent,type:'walkin',added:todayPH(),phone,birthday:bday};
     try{ await call('saveClient',cl); }catch(e){}
@@ -787,6 +807,7 @@ function resetKiosk(){
   const wiPhone = document.getElementById('wi-phone'); if(wiPhone){ wiPhone.value=''; wiPhone.classList.remove('err'); }
   const wiBday  = document.getElementById('wi-bday');  if(wiBday) { wiBday.value='';  wiBday.classList.remove('err'); }
   document.getElementById('tc-chk').checked=false;
+  document.getElementById('find-us').value='';
   // Reset social media consent
   const sy = document.getElementById('smc-yes'); if(sy) sy.checked=false;
   const sn = document.getElementById('smc-no');  if(sn) sn.checked=false;
